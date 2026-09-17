@@ -15,6 +15,7 @@ variables:
   - group: EnterpriseServiceDesk-Secrets
 
 steps:
+
   - script: |
       python3 --version
       python3 -m venv .venv
@@ -28,18 +29,6 @@ steps:
       . .venv/bin/activate
       python -m ruff check .
     displayName: 'Run code quality checks'
-
-  - script: |
-      if [ -n "$DB_SERVER" ]; then echo "DB_SERVER is set"; else echo "DB_SERVER is NOT set"; fi
-      if [ -n "$DB_NAME" ]; then echo "DB_NAME is set"; else echo "DB_NAME is NOT set"; fi
-      if [ -n "$DB_USER" ]; then echo "DB_USER is set"; else echo "DB_USER is NOT set"; fi
-      if [ -n "$DB_PASSWORD" ]; then echo "DB_PASSWORD is set"; else echo "DB_PASSWORD is NOT set"; fi
-    displayName: 'Verify database variables'
-    env:
-      DB_SERVER: $(DB-SERVER)
-      DB_NAME: $(DB-NAME)
-      DB_USER: $(DB-USER)
-      DB_PASSWORD: $(DB-PASSWORD)
 
   - script: |
       . .venv/bin/activate
@@ -59,6 +48,10 @@ steps:
   - script: |
       docker build -t enterprise-servicedesk:$(Build.BuildId) .
     displayName: 'Build Docker image'
+
+  - script: |
+      trivy image --severity HIGH,CRITICAL --exit-code 1 enterprise-servicedesk:$(Build.BuildId)
+    displayName: 'Run Trivy image vulnerability scan'
 
   - task: AzureCLI@2
     displayName: 'Login to Azure Container Registry'
