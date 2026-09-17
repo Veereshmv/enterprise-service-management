@@ -17,17 +17,21 @@ variables:
 steps:
   - script: |
       python3 --version
-      python3 -m pip install --upgrade pip
-      pip3 install -r requirements.txt
-      pip3 install -r requirements-dev.txt
+      python3 -m venv .venv
+      . .venv/bin/activate
+      python -m pip install --upgrade pip
+      python -m pip install -r requirements.txt
+      python -m pip install -r requirements-dev.txt
     displayName: 'Install dependencies'
 
   - script: |
-      python3 -m ruff check .
+      . .venv/bin/activate
+      python -m ruff check .
     displayName: 'Run code quality checks'
 
   - script: |
-      python3 -m pytest -v
+      . .venv/bin/activate
+      python -m pytest -v
     displayName: 'Run automated tests'
     env:
       DB_SERVER: $(DB-SERVER)
@@ -36,7 +40,8 @@ steps:
       DB_PASSWORD: $(DB-PASSWORD)
 
   - script: |
-      python3 -m pip_audit -r requirements.txt
+      . .venv/bin/activate
+      python -m pip_audit -r requirements.txt
     displayName: 'Run dependency security scan'
 
   - script: |
