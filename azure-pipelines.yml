@@ -42,3 +42,17 @@ steps:
   - script: |
       docker build -t enterprise-servicedesk:$(Build.BuildId) .
     displayName: 'Build Docker image'
+
+  - task: AzureCLI@2
+    displayName: 'Login to Azure Container Registry'
+    inputs:
+      azureSubscription: 'EnterpriseServiceDesk-Azure'
+      scriptType: 'ps'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        az acr login --name taskhubacrdev260826
+
+  - script: |
+      docker tag enterprise-servicedesk:$(Build.BuildId) taskhubacrdev260826.azurecr.io/enterprise-servicedesk:$(Build.BuildId)
+      docker push taskhubacrdev260826.azurecr.io/enterprise-servicedesk:$(Build.BuildId)
+    displayName: 'Push Docker image to ACR'
