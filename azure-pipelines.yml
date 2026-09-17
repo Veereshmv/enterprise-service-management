@@ -38,3 +38,7 @@ steps:
   - script: |
       python -m pip_audit -r requirements.txt
     displayName: 'Run dependency security scan'
+
+  - script: |
+      docker build -t enterprise-servicedesk:$(Build.BuildId) .
+    displayName: 'Build Docker image'
