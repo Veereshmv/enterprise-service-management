@@ -11,6 +11,9 @@ pr:
 pool:
   vmImage: 'ubuntu-latest'
 
+variables:
+  - group: EnterpriseServiceDesk-Secrets
+
 steps:
   - task: UsePythonVersion@0
     displayName: 'Use Python 3.12'
@@ -26,3 +29,8 @@ steps:
   - script: |
       python -m pytest -v
     displayName: 'Run automated tests'
+    env:
+      DB_SERVER: $(DB-SERVER)
+      DB_NAME: $(DB-NAME)
+      DB_USER: $(DB-USER)
+      DB_PASSWORD: $(DB-PASSWORD)
