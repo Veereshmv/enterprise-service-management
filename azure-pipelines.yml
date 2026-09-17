@@ -9,7 +9,7 @@ pr:
       - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'EnterpriseServiceDesk-Pool'
 
 variables:
   - group: EnterpriseServiceDesk-Secrets
