@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Support Engineer - Enterprise Service Desk</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #1f2937;
+        }
+
+        header {
+            background: #1f2937;
+            color: white;
+            padding: 20px 40px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        header p {
+            margin: 6px 0 0;
+            color: #d1d5db;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        .ticket {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+        }
+
+        .ticket:hover {
+            background: #f9fafb;
+        }
+
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .ticket-title {
+            font-weight: bold;
+            font-size: 17px;
+        }
+
+        .ticket-id {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .ticket-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .badge {
+            background: #f3f4f6;
+            padding: 5px 9px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 11px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        #message {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .empty {
+            color: #6b7280;
+        }
+
+        .description {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Enterprise Service Desk</h1>
+    <p>Support Engineer Portal</p>
+</header>
+
+<main>
+
+    <section class="card">
+        <h2>All Tickets</h2>
+
+        <div id="tickets">
+            <p class="empty">Loading tickets...</p>
+        </div>
+    </section>
+
+
+    <section class="card" id="ticketDetails" style="display: none;">
+
+        <h2>Ticket Details</h2>
+
+        <div id="details"></div>
+
+        <div class="form-group">
+            <label for="status">Status</label>
+
+            <select id="status">
+                <option value="NEW">NEW</option>
+                <option value="IN PROGRESS">IN PROGRESS</option>
+                <option value="RESOLVED">RESOLVED</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="supportUpdate">Support Update</label>
+
+            <textarea
+                id="supportUpdate"
+                placeholder="Enter investigation details, resolution or update..."
+            ></textarea>
+        </div>
+
+        <button onclick="updateTicket()">
+            Update Ticket
+        </button>
+
+        <div id="message"></div>
+
+    </section>
+
+</main>
+
+
+<script>
+
+    let selectedTicketId = null;
+
+
+    async function loadTickets() {
+
+        try {
+
+            const response = await fetch("/tickets");
+
+            if (!response.ok) {
+                throw new Error("Failed to load tickets");
+            }
+
+            const tickets = await response.json();
+
+            if (tickets.length === 0) {
+
+                document.getElementById("tickets").innerHTML =
+                    '<p class="empty">No tickets available.</p>';
+
+                return;
+            }
+
+
+            document.getElementById("tickets").innerHTML =
+                tickets.map(ticket => `
+
+                    <div
+                        class="ticket"
+                        onclick="selectTicket(${ticket.id})"
+                    >
+
+                        <div class="ticket-header">
+
+                            <div class="ticket-title">
+                                ${escapeHtml(ticket.title)}
+                            </div>
+
+                            <div class="ticket-id">
+                                Ticket #${ticket.id}
+                            </div>
+
+                        </div>
+
+
+                        <div class="ticket-details">
+
+                            <span class="badge">
+                                Type: ${escapeHtml(ticket.ticket_type)}
+                            </span>
+
+                            <span class="badge">
+                                Priority: ${escapeHtml(ticket.priority)}
+                            </span>
+
+                            <span class="badge">
+                                Status: ${escapeHtml(ticket.status)}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                `).join("");
+
+
+        } catch (error) {
+
+            document.getElementById("tickets").innerHTML =
+                '<p class="empty">Unable to load tickets.</p>';
+
+        }
+    }
+
+
+    async function selectTicket(ticketId) {
+
+        try {
+
+            const response = await fetch("/tickets");
+
+            const tickets = await response.json();
+
+            const ticket = tickets.find(
+                item => item.id === ticketId
+            );
+
+            if (!ticket) {
+                return;
+            }
+
+            selectedTicketId = ticket.id;
+
+
+            document.getElementById("ticketDetails").style.display =
+                "block";
+
+
+            document.getElementById("details").innerHTML = `
+
+                <div class="description">
+
+                    <p>
+                        <strong>Ticket ID:</strong>
+                        #${ticket.id}
+                    </p>
+
+                    <p>
+                        <strong>Title:</strong>
+                        ${escapeHtml(ticket.title)}
+                    </p>
+
+                    <p>
+                        <strong>Description:</strong>
+                    </p>
+
+                    <p>
+                        ${escapeHtml(ticket.description)}
+                    </p>
+
+                    <p>
+                        <strong>Type:</strong>
+                        ${escapeHtml(ticket.ticket_type)}
+                    </p>
+
+                    <p>
+                        <strong>Priority:</strong>
+                        ${escapeHtml(ticket.priority)}
+                    </p>
+
+                    <p>
+                        <strong>Created:</strong>
+                        ${formatDate(ticket.created_at)}
+                    </p>
+
+                </div>
+
+            `;
+
+
+            document.getElementById("status").value =
+                ticket.status;
+
+            document.getElementById("supportUpdate").value =
+                ticket.support_update || "";
+
+            document.getElementById("message").textContent = "";
+
+            document.getElementById("ticketDetails").scrollIntoView({
+                behavior: "smooth"
+            });
+
+
+        } catch (error) {
+
+            console.error("Unable to select ticket", error);
+
+        }
+    }
+
+
+    async function updateTicket() {
+
+        if (!selectedTicketId) {
+            return;
+        }
+
+
+        const status =
+            document.getElementById("status").value;
+
+        const supportUpdate =
+            document.getElementById("supportUpdate").value;
+
+
+        const message =
+            document.getElementById("message");
+
+        message.textContent = "Updating ticket...";
+
+
+        try {
+
+            const response = await fetch(
+                `/tickets/${selectedTicketId}`,
+                {
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        status: status,
+                        support_update: supportUpdate
+                    })
+                }
+            );
+
+
+            if (!response.ok) {
+                throw new Error("Failed to update ticket");
+            }
+
+
+            message.textContent =
+                "Ticket updated successfully.";
+
+            await loadTickets();
+
+
+        } catch (error) {
+
+            message.textContent =
+                "Unable to update ticket.";
+
+        }
+    }
+
+
+    function escapeHtml(value) {
+
+        const div = document.createElement("div");
+
+        div.textContent = value;
+
+        return div.innerHTML;
+    }
+
+
+    function formatDate(value) {
+
+        if (!value) {
+            return "";
+        }
+
+        return new Date(value).toLocaleString();
+    }
+
+
+    loadTickets();
+
+</script>
+
+</body>
+</html>
