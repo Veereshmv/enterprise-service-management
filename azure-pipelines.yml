@@ -23,6 +23,10 @@ steps:
     displayName: 'Install dependencies'
 
   - script: |
+      python -m ruff check .
+    displayName: 'Run code quality checks'
+
+  - script: |
       python -m pytest -v
     displayName: 'Run automated tests'
     env:
