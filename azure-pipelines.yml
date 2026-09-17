@@ -9,7 +9,7 @@ pr:
       - main
 
 pool:
-  vmImage: 'EnterpriseServiceDesk-Pool'
+  name: 'EnterpriseServiceDesk-Pool'
 
 variables:
   - group: EnterpriseServiceDesk-Secrets
@@ -19,15 +19,6 @@ steps:
     displayName: 'Use Python 3.12'
     inputs:
       versionSpec: '3.12'
-
-  - script: |
-      sudo apt-get update
-      sudo apt-get install -y curl gnupg2
-      curl https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg
-      curl https://packages.microsoft.com/config/ubuntu/24.04/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list
-      sudo apt-get update
-      sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18
-    displayName: 'Install ODBC Driver 18'
 
   - script: |
       python -m pip install --upgrade pip
