@@ -34,3 +34,7 @@ steps:
       DB_NAME: $(DB-NAME)
       DB_USER: $(DB-USER)
       DB_PASSWORD: $(DB-PASSWORD)
+
+  - script: |
+      python -m pip_audit -r requirements.txt
+    displayName: 'Run dependency security scan'
