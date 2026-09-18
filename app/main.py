@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 from app.database import Base, engine, get_db
 from app.models import Ticket
 
-
 Base.metadata.create_all(bind=engine)
 
 
