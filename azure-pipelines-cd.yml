@@ -1,0 +1,33 @@
+trigger: none
+
+pr: none
+
+pool:
+  name: 'Default'
+
+variables:
+  azureSubscription: 'EnterpriseServiceDesk-Azure'
+  resourceGroup: 'rg-enterprise-service'
+  appName: 'enterprise-servicedesk-app'
+  acrName: 'taskhubacrdev260826'
+  imageRepository: 'enterprise-servicedesk'
+  imageTag: '65'
+
+steps:
+
+  - task: AzureCLI@2
+    displayName: 'Deploy container to Azure App Service'
+    inputs:
+      azureSubscription: '$(azureSubscription)'
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        az webapp config container set \
+          --name "$(appName)" \
+          --resource-group "$(resourceGroup)" \
+          --docker-custom-image-name "$(acrName).azurecr.io/$(imageRepository):$(imageTag)" \
+          --docker-registry-server-url "https://$(acrName).azurecr.io"
+
+        az webapp restart \
+          --name "$(appName)" \
+          --resource-group "$(resourceGroup)"
