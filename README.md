@@ -18,7 +18,7 @@ Overall, the project demonstrates the practical use of FastAPI, Docker, Azure De
 
 ### Service Desk
 
-![Enterprise Service Desk Main Page](https://github.com/Veereshmv/enterprise-service-management/blob/main/Enterprise%20Service%20Desk%20Main%20Page.png?raw=true)
+![Enterprise Service Desk Main Page](https://github.com/Veereshmv/enterprise-service-management/blob/main/Enterprise_Service_Desk_Main_Page.png?raw=true)
 
 ![Enterprise Service Desk Main Page](https://github.com/Veereshmv/enterprise-service-management/blob/main/Enterprise_Service_Desk_Main_Page_1.png?raw=true)
 
