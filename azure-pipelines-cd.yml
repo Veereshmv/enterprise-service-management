@@ -1,0 +1,69 @@
+parameters:
+  - name: deploymentAction
+    displayName: 'Deployment action'
+    type: string
+    default: deploy
+    values:
+      - deploy
+      - rollback
+
+  - name: imageTag
+    displayName: 'Docker image tag'
+    type: string
+    default: '65'
+
+trigger: none
+
+pr: none
+
+pool:
+  name: 'Default'
+
+variables:
+  azureSubscription: 'EnterpriseServiceDesk-Azure'
+  resourceGroup: 'rg-enterprise-service'
+  appName: 'enterprise-servicedesk-app'
+  acrName: 'taskhubacrdev260826'
+  imageRepository: 'enterprise-servicedesk'
+
+steps:
+
+  - task: AzureCLI@2
+    displayName: 'Deploy container to Azure App Service'
+    inputs:
+      azureSubscription: '$(azureSubscription)'
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        echo "Deployment action: ${{ parameters.deploymentAction }}"
+        echo "Image tag: ${{ parameters.imageTag }}"
+        echo "Image: $(acrName).azurecr.io/$(imageRepository):${{ parameters.imageTag }}"
+
+        az webapp config container set \
+          --name "$(appName)" \
+          --resource-group "$(resourceGroup)" \
+          --docker-custom-image-name "$(acrName).azurecr.io/$(imageRepository):${{ parameters.imageTag }}" \
+          --docker-registry-server-url "https://$(acrName).azurecr.io"
+
+        az webapp restart \
+          --name "$(appName)" \
+          --resource-group "$(resourceGroup)"
+
+        echo "App Service deployment completed."
+
+  - task: AzureCLI@2
+    displayName: 'Verify App Service'
+    inputs:
+      azureSubscription: '$(azureSubscription)'
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        echo "Checking App Service state..."
+
+        az webapp show \
+          --name "$(appName)" \
+          --resource-group "$(resourceGroup)" \
+          --query "{name:name,state:state,hostNames:defaultHostName}" \
+          --output table
+
+        echo "Deployment verification completed."
