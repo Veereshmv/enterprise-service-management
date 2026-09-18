@@ -1,3 +1,9 @@
+parameters:
+  - name: imageTag
+    displayName: 'Docker image tag to deploy'
+    type: string
+    default: '65'
+
 trigger: none
 
 pr: none
@@ -11,7 +17,6 @@ variables:
   appName: 'enterprise-servicedesk-app'
   acrName: 'taskhubacrdev260826'
   imageRepository: 'enterprise-servicedesk'
-  imageTag: '65'
 
 steps:
 
@@ -22,10 +27,13 @@ steps:
       scriptType: 'bash'
       scriptLocation: 'inlineScript'
       inlineScript: |
+        echo "Deploying image:"
+        echo "$(acrName).azurecr.io/$(imageRepository):${{ parameters.imageTag }}"
+
         az webapp config container set \
           --name "$(appName)" \
           --resource-group "$(resourceGroup)" \
-          --docker-custom-image-name "$(acrName).azurecr.io/$(imageRepository):$(imageTag)" \
+          --docker-custom-image-name "$(acrName).azurecr.io/$(imageRepository):${{ parameters.imageTag }}" \
           --docker-registry-server-url "https://$(acrName).azurecr.io"
 
         az webapp restart \
