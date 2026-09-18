@@ -18,7 +18,7 @@ Overall, the project demonstrates the practical use of FastAPI, Docker, Azure De
 
 ## Architecture
 
-![Enterprise Service Desk Architecture](https://github.com/Veereshmv/enterprise-service-management/blob/main/Architecture.png?raw=true)
+![Enterprise Service Desk Architecture](https://github.com/Veereshmv/enterprise-service-management/blob/main/Archi1.png?raw=true)
 
 ### Service Desk
 
