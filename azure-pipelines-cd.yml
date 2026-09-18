@@ -1,6 +1,14 @@
 parameters:
+  - name: deploymentAction
+    displayName: 'Deployment action'
+    type: string
+    default: deploy
+    values:
+      - deploy
+      - rollback
+
   - name: imageTag
-    displayName: 'Docker image tag to deploy'
+    displayName: 'Docker image tag'
     type: string
     default: '65'
 
@@ -27,8 +35,9 @@ steps:
       scriptType: 'bash'
       scriptLocation: 'inlineScript'
       inlineScript: |
-        echo "Deploying image:"
-        echo "$(acrName).azurecr.io/$(imageRepository):${{ parameters.imageTag }}"
+        echo "Deployment action: ${{ parameters.deploymentAction }}"
+        echo "Image tag: ${{ parameters.imageTag }}"
+        echo "Image: $(acrName).azurecr.io/$(imageRepository):${{ parameters.imageTag }}"
 
         az webapp config container set \
           --name "$(appName)" \
@@ -39,3 +48,22 @@ steps:
         az webapp restart \
           --name "$(appName)" \
           --resource-group "$(resourceGroup)"
+
+        echo "App Service deployment completed."
+
+  - task: AzureCLI@2
+    displayName: 'Verify App Service'
+    inputs:
+      azureSubscription: '$(azureSubscription)'
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        echo "Checking App Service state..."
+
+        az webapp show \
+          --name "$(appName)" \
+          --resource-group "$(resourceGroup)" \
+          --query "{name:name,state:state,hostNames:defaultHostName}" \
+          --output table
+
+        echo "Deployment verification completed."
